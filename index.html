@@ -1,0 +1,146 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Acme NoteTaker</title>
+
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-router-dom/umd/react-router-dom.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.js'></script>
+    
+    <style>
+        nav{
+            display:flex;
+            flex-direction: row;
+            list-style: none;
+            justify-content: space-evenly;
+        }
+    </style>
+
+
+
+</head>
+<body>
+    <div id='root'></div>
+</body>
+<script type="text/babel">
+    const {Component} = React;
+    const {render} = ReactDOM;
+    const {Route, Switch, Link,  HashRouter, Redirect } = ReactRouterDOM;
+
+    const API = 'http://127.0.0.1:5500/index.html#/'
+
+    const Nav =()=>{
+        const links = ['Notes', 'Archived', 'Create']
+        return(
+            
+            <nav>
+            { links.map((link,idx)=>{
+                return(
+                    <li key={idx}>
+                        <Link to={`/${link}`} >{link}</Link>
+                    </li> 
+                )
+            })}
+            </nav>
+        )
+    }
+
+
+    class App extends Component{
+        constructor(){
+            super();
+
+            this.state={
+                currentNote:'',
+                notes:[]
+            };
+        }
+
+        handleChange=(ev)=>{
+            this.setState({currentNote:ev.target.value})
+        }
+
+        handleSubmit=(ev)=>{
+            ev.preventDefault();
+            const newNotesArray=this.state.notes;
+            newNotesArray.push(this.state.currentNote);
+            this.setState({notes:newNotesArray})
+
+        }
+        destroy=(idx)=>{
+            // const newNotesArray=this.state.notes;
+            // newNotesArray.splice(idx);
+            // this.setState({notes:newNotesArray})
+
+
+        }
+
+        FormContainer= ()=>{
+
+            return (
+                
+            <form onSubmit={this.handleSubmit}>
+            <label>
+
+            <input type="text" placeholder='Create New Note' onChange={this.handleChange} value={this.state.currentNote}/>
+
+            <button>Submit</button>
+            </label>
+            </form>
+            )
+        }
+
+        
+
+        NotesContainer=({notes})=>{
+            console.log(notes)
+            if(notes.length==0){
+                return(
+                    <div>currently loading ...</div>
+                )
+            }
+
+            return(
+                <div>
+                    <ul>
+                        {notes.map((note,idx)=>{
+                            return(
+                                <li key={idx}>{note}
+                                <button key={`archive${idx}`}>archive</button>
+                                <button key={`destroy${idx}`} onClick={this.destroy(idx)}>destroy</button></li>
+                                  
+                            )
+                        })}
+                    </ul>
+                </div>
+
+            )
+
+        }
+
+        
+        render(){
+            return (
+                // <h1>hello</h1>
+
+                <HashRouter>
+                    <Route component={Nav}></Route>
+                    <Switch>
+                    <Route path='/Notes' render={ ()=> <this.NotesContainer notes= {this.state.notes}/>}></Route>
+                    <Route path='/Archived'></Route>
+                    <Route path='/Create' render={()=><this.FormContainer/> }></Route>
+                    <Redirect to='/Create'/>
+                    </Switch>
+                  
+                </HashRouter>
+            )
+        }
+
+    }
+    render(<App/>,document.getElementById('root'))
+</script>
+</html>
